@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.auunes.mapper.StudentMapper">
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.auunes.entity.Student">
+        <id column="id" property="id"/>
+        <result column="student_id" property="studentId"/>
+        <result column="name" property="name"/>
+        <result column="gender" property="gender"/>
+        <result column="age" property="age"/>
+        <result column="class_id" property="classId"/>
+        <result column="class_name" property="className"/>
+        <result column="phone" property="phone"/>
+        <result column="email" property="email"/>
+        <result column="address" property="address"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+    
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        s.id, s.student_id, s.name, s.gender, s.age, s.class_id, c.class_name,
+        s.phone, s.email, s.address, s.create_time, s.update_time
+    </sql>
+    
+    <!-- 查询条件 -->
+    <sql id="Where_Clause">
+        <where>
+            <if test="id != null">
+                AND s.id = #{id}
+            </if>
+            <if test="studentId != null and studentId != ''">
+                AND s.student_id = #{studentId}
+            </if>
+            <if test="name != null and name != ''">
+                AND s.name LIKE CONCAT('%', #{name}, '%')
+            </if>
+            <if test="classId != null">
+                AND s.class_id = #{classId}
+            </if>
+        </where>
+    </sql>
+    
+    <!-- 查询学生列表 -->
+    <select id="selectStudentList" parameterType="com.auunes.entity.Student" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM student s
+        LEFT JOIN class_info c ON s.class_id = c.id
+        <include refid="Where_Clause"/>
+        ORDER BY s.create_time DESC
+    </select>
+    
+    <!-- 根据ID查询学生 -->
+    <select id="selectById" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM student s
+        LEFT JOIN class_info c ON s.class_id = c.id
+        WHERE s.id = #{id}
+    </select>
+    
+    <!-- 根据班级ID查询学生列表 -->
+    <select id="selectByClassId" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM student s
+        LEFT JOIN class_info c ON s.class_id = c.id
+        WHERE s.class_id = #{classId}
+        ORDER BY s.create_time DESC
+    </select>
+    
+    <!-- 统计班级学生人数 -->
+    <select id="countByClassId" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM student
+        WHERE class_id = #{classId}
+    </select>
+    
+    <!-- 新增学生 -->
+    <insert id="insert" parameterType="com.auunes.entity.Student" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO student (
+            student_id, name, gender, age, class_id, 
+            phone, email, address, create_time, update_time
+        )
+        VALUES (
+            #{studentId}, #{name}, #{gender}, #{age}, #{classId},
+            #{phone}, #{email}, #{address}, now(), now()
+        )
+    </insert>
+    
+    <!-- 更新学生 -->
+    <update id="update" parameterType="com.auunes.entity.Student">
+        UPDATE student
+        <set>
+            <if test="studentId != null">student_id = #{studentId},</if>
+            <if test="name != null">name = #{name},</if>
+            <if test="gender != null">gender = #{gender},</if>
+            <if test="age != null">age = #{age},</if>
+            <if test="classId != null">class_id = #{classId},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="address != null">address = #{address},</if>
+            update_time = now()
+        </set>
+        WHERE id = #{id}
+    </update>
+    
+    <!-- 删除学生 -->
+    <delete id="deleteById" parameterType="java.lang.Integer">
+        DELETE FROM student WHERE id = #{id}
+    </delete>
+    
+    <!-- 统计学生总数 -->
+    <select id="count" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM student
+    </select>
+</mapper> 
