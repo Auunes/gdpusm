@@ -8,19 +8,38 @@ import org.apache.catalina.startup.Tomcat;
 import org.apache.coyote.http11.Http11NioProtocol;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * 学生管理系统启动类
  * 内嵌Tomcat启动Spring MVC应用
  */
 public class StudentManagementApplication {
-    // 虚拟机IP地址
-    private static final String VM_IP = "192.168.81.131";
+    // 从配置文件读取虚拟机IP地址
+    private static String VM_IP;
+    
+    static {
+        try {
+            Properties props = new Properties();
+            FileInputStream fis = new FileInputStream("src/main/resources/jdbc.properties");
+            props.load(fis);
+            fis.close();
+            
+            // 从JDBC URL中提取IP地址
+            String jdbcUrl = props.getProperty("jdbc.url");
+            VM_IP = jdbcUrl.split("//")[1].split(":")[0];
+        } catch (IOException e) {
+            System.err.println("无法读取配置文件，使用默认IP地址(localhost): " + e.getMessage());
+            VM_IP = "localhost"; // 默认值改为localhost
+        }
+    }
     
     /**
      * 主方法，使用内嵌Tomcat启动应用
@@ -81,11 +100,8 @@ public class StudentManagementApplication {
             
             System.out.println("========================================");
             System.out.println("学生管理系统已启动");
-            System.out.println("本地访问地址: http://localhost:8080");
             System.out.println("网络访问地址: http://" + bindAddress + ":8080");
             System.out.println("API接口地址: http://" + bindAddress + ":8080/api");
-            System.out.println("API测试接口: http://" + bindAddress + ":8080/api/test");
-            System.out.println("API登录接口: http://" + bindAddress + ":8080/api/auth/login");
             System.out.println("========================================");
             
             // 等待请求，不要退出主线程

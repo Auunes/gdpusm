@@ -14,13 +14,15 @@
 
     <el-table :data="tableData" border style="width: 100%; margin-top: 20px">
       <el-table-column prop="id" label="教师ID" width="100"></el-table-column>
+      <el-table-column prop="teacherId" label="教师工号" width="120"></el-table-column>
       <el-table-column prop="name" label="姓名" width="120"></el-table-column>
       <el-table-column prop="gender" label="性别" width="80">
         <template slot-scope="scope">
-          {{ scope.row.gender === 1 ? '男' : '女' }}
+          {{ scope.row.gender }}
         </template>
       </el-table-column>
-      <el-table-column prop="phone" label="电话"></el-table-column>
+      <el-table-column prop="department" label="所属院系" width="150"></el-table-column>
+      <el-table-column prop="phone" label="手机号" width="120"></el-table-column>
       <el-table-column prop="email" label="邮箱"></el-table-column>
       <el-table-column label="操作" width="200">
         <template slot-scope="scope">
@@ -44,17 +46,23 @@
 
     <el-dialog :title="dialogTitle" :visible.sync="dialogVisible" width="500px">
       <el-form :model="form" :rules="rules" ref="form" label-width="80px">
+        <el-form-item label="工号" prop="teacherId">
+          <el-input v-model="form.teacherId" placeholder="请输入教师工号"></el-input>
+        </el-form-item>
         <el-form-item label="姓名" prop="name">
           <el-input v-model="form.name"></el-input>
         </el-form-item>
         <el-form-item label="性别" prop="gender">
           <el-radio-group v-model="form.gender">
-            <el-radio :label="1">男</el-radio>
-            <el-radio :label="2">女</el-radio>
+            <el-radio label="男">男</el-radio>
+            <el-radio label="女">女</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="电话" prop="phone">
-          <el-input v-model="form.phone"></el-input>
+        <el-form-item label="院系" prop="department">
+          <el-input v-model="form.department" placeholder="请输入所属院系"></el-input>
+        </el-form-item>
+        <el-form-item label="手机号" prop="phone">
+          <el-input v-model="form.phone" placeholder="请输入手机号"></el-input>
         </el-form-item>
         <el-form-item label="邮箱" prop="email">
           <el-input v-model="form.email"></el-input>
@@ -82,25 +90,25 @@ export default {
       dialogTitle: '',
       form: {
         id: null,
+        teacherId: '',
         name: '',
-        gender: 1,
+        gender: '男',
+        department: '',
         phone: '',
         email: ''
       },
       rules: {
+        teacherId: [
+          { required: true, message: '请输入教师工号', trigger: 'blur' }
+        ],
         name: [
           { required: true, message: '请输入姓名', trigger: 'blur' }
         ],
         gender: [
           { required: true, message: '请选择性别', trigger: 'change' }
         ],
-        phone: [
-          { required: true, message: '请输入电话', trigger: 'blur' },
-          { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号码', trigger: 'blur' }
-        ],
-        email: [
-          { required: true, message: '请输入邮箱', trigger: 'blur' },
-          { type: 'email', message: '请输入正确的邮箱地址', trigger: 'blur' }
+        department: [
+          { required: true, message: '请输入所属院系', trigger: 'blur' }
         ]
       }
     }
@@ -113,13 +121,17 @@ export default {
       const params = {
         pageNum: this.currentPage,
         pageSize: this.pageSize,
-        className: this.searchName
+        teacherName: this.searchName
       }
-      this.$axios.post('/api/teacher/list', { params }).then(res => {
+      this.$axios.post('/api/teacher/list', params).then(res => {
         if (res.error === 0) {
           this.tableData = res.body.list
           this.total = res.body.total
+        } else {
+          this.$message.error(res.message || '获取列表失败')
         }
+      }).catch(error => {
+        this.$message.error('获取列表失败')
       })
     },
     handleSearch() {
@@ -138,8 +150,10 @@ export default {
       this.dialogTitle = '添加教师'
       this.form = {
         id: null,
+        teacherId: '',
         name: '',
-        gender: 1,
+        gender: '男',
+        department: '',
         phone: '',
         email: ''
       }
@@ -154,11 +168,15 @@ export default {
       this.$confirm('确认删除该教师?', '提示', {
         type: 'warning'
       }).then(() => {
-        this.$axios.delete(`/api/teacher/${row.id}`).then(res => {
-          if (res.data.code === 200) {
+        this.$axios.post('/api/teacher/delete', { id: row.id }).then(res => {
+          if (res.error === 0) {
             this.$message.success('删除成功')
             this.getList()
+          } else {
+            this.$message.error(res.message || '删除失败')
           }
+        }).catch(error => {
+          this.$message.error('删除失败')
         })
       }).catch(() => {})
     },
@@ -166,15 +184,19 @@ export default {
       this.$refs.form.validate(valid => {
         if (valid) {
           const request = this.form.id
-            ? this.$axios.put('/api/teacher', this.form)
-            : this.$axios.post('/api/teacher', this.form)
+            ? this.$axios.post('/api/teacher/update', this.form)
+            : this.$axios.post('/api/teacher/add', this.form)
           
           request.then(res => {
-            if (res.data.code === 200) {
-              this.$message.success(this.form.id ? '修改成功' : '添加成功')
+            if (res.error === 0) {
+              this.$message.success(res.message || (this.form.id ? '修改成功' : '添加成功'))
               this.dialogVisible = false
               this.getList()
+            } else {
+              this.$message.error(res.message || (this.form.id ? '修改失败' : '添加失败'))
             }
+          }).catch(error => {
+            this.$message.error(this.form.id ? '修改失败' : '添加失败')
           })
         }
       })

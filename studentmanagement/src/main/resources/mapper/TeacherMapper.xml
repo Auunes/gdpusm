@@ -40,7 +40,7 @@
                 AND department = #{department}
             </if>
         </where>
-        ORDER BY create_time DESC
+        ORDER BY id ASC
     </select>
     
     <!-- 根据ID查询教师 -->

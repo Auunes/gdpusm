@@ -48,7 +48,7 @@
         FROM student s
         LEFT JOIN class_info c ON s.class_id = c.id
         <include refid="Where_Clause"/>
-        ORDER BY s.create_time DESC
+        ORDER BY s.id ASC
     </select>
     
     <!-- 根据ID查询学生 -->
@@ -67,7 +67,7 @@
         FROM student s
         LEFT JOIN class_info c ON s.class_id = c.id
         WHERE s.class_id = #{classId}
-        ORDER BY s.create_time DESC
+        ORDER BY s.id ASC
     </select>
     
     <!-- 统计班级学生人数 -->

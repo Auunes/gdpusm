@@ -52,7 +52,13 @@
           <el-input v-model="form.major"></el-input>
         </el-form-item>
         <el-form-item label="班主任" prop="teacherId">
-          <el-select v-model="form.teacherId" placeholder="请选择班主任">
+          <el-select v-model="form.teacherId" placeholder="请选择班主任" clearable>
+            <el-option
+              :key="null"
+              label="未配置"
+              :value="null"
+            >
+            </el-option>
             <el-option
               v-for="item in teacherOptions"
               :key="item.id"
@@ -101,7 +107,7 @@ export default {
           { required: true, message: '请输入专业', trigger: 'blur' }
         ],
         teacherId: [
-          { required: true, message: '请选择班主任', trigger: 'change' }
+          { required: false, message: '请选择班主任', trigger: 'change' }
         ]
       },
       teacherOptions: []

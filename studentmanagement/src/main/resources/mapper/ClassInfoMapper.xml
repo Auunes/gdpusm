@@ -39,7 +39,7 @@
                 AND teacher_id = #{teacherId}
             </if>
         </where>
-        ORDER BY create_time DESC
+        ORDER BY id ASC
     </select>
     
     <!-- 根据ID查询班级 -->
@@ -55,7 +55,7 @@
         SELECT
         <include refid="Base_Column_List"/>
         FROM class_info
-        ORDER BY create_time DESC
+        ORDER BY id ASC
     </select>
     
     <!-- 新增班级 -->
